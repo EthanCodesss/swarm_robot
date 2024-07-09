@@ -443,10 +443,10 @@ int main(int argc, char **argv) {
   ros::NodeHandle n("~");
 
   n.param("mesh_resource", mesh_resource,
-          std::string("package://odom_visualization/meshes/chassis.dae"));
-  n.param("color/r", color_r, 155.0);
-  n.param("color/g", color_g, 120.0);
-  n.param("color/b", color_b, 15.0);
+          std::string("package://odom_visualization/meshes/hummingbird.mesh"));
+  n.param("color/r", color_r, 1.0);
+  n.param("color/g", color_g, 0.0);
+  n.param("color/b", color_b, 0.0);
   n.param("color/a", color_a, 1.0);
   n.param("origin", origin, false);
   n.param("robot_scale", scale, 2.0);

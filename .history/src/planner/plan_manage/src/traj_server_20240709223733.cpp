@@ -11,10 +11,6 @@
 #include <traj_utils/PolyTraj.h>
 #include <visualization_msgs/Marker.h>
 
-// 对应 kinematics_sim.cpp中的代码
-// traj_server中的z应该删除， 因为轨迹是二维的， odom中的z应该保留
-// 修改思路： 首先降低轨迹优化维度为2维，
-// 然后在traj_server中计算时，手动添加z为固定值。完成后，修改微分平坦系统。
 ros::Publisher pos_cmd_pub;
 
 quadrotor_msgs::PositionCommand cmd;
@@ -82,9 +78,7 @@ void polyTrajCallback(traj_utils::PolyTrajPtr msg) {
     cMats[i].row(1) << msg->coef_y[i6 + 0], msg->coef_y[i6 + 1],
         msg->coef_y[i6 + 2], msg->coef_y[i6 + 3], msg->coef_y[i6 + 4],
         msg->coef_y[i6 + 5];
-    cMats[i].row(2) << msg->coef_z[i6 + 0], msg->coef_z[i6 + 1],
-        msg->coef_z[i6 + 2], msg->coef_z[i6 + 3], msg->coef_z[i6 + 4],
-        msg->coef_z[i6 + 5];
+    cMats[i].row(2) << 0, 0, 0, 0, 0, 0;
 
     dura[i] = msg->duration[i];
   }

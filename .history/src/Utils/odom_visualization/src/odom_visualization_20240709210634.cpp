@@ -52,31 +52,29 @@ void odom_callback(const nav_msgs::Odometry::ConstPtr &msg) {
   if (msg->header.frame_id == string("null"))
     return;
 
-  colvec pose(6);
+  colvec pose(5);
   pose(0) = msg->pose.pose.position.x;
   pose(1) = msg->pose.pose.position.y;
-  pose(2) = msg->pose.pose.position.z;
   colvec q(4);
 
   q(0) = msg->pose.pose.orientation.w;
   q(1) = msg->pose.pose.orientation.x;
   q(2) = msg->pose.pose.orientation.y;
   q(3) = msg->pose.pose.orientation.z;
-  pose.rows(3, 5) = R_to_ypr(quaternion_to_R(q));
-  colvec vel(3);
+  pose.rows(2, 4) = R_to_ypr(quaternion_to_R(q));
+  colvec vel(2);
 
   vel(0) = msg->twist.twist.linear.x;
   vel(1) = msg->twist.twist.linear.y;
-  vel(2) = msg->twist.twist.linear.z;
 
   if (origin && !isOriginSet) {
     isOriginSet = true;
     poseOrigin = pose;
   }
   if (origin) {
-    vel = trans(ypr_to_R(pose.rows(3, 5))) * vel;
+    vel = trans(ypr_to_R(pose.rows(2, 4))) * vel;
     pose = pose_update(pose_inverse(poseOrigin), pose);
-    vel = ypr_to_R(pose.rows(3, 5)) * vel;
+    vel = ypr_to_R(pose.rows(2, 4)) * vel;
   }
 
   // Pose
@@ -85,8 +83,7 @@ void odom_callback(const nav_msgs::Odometry::ConstPtr &msg) {
   poseROS.header.frame_id = string("world");
   poseROS.pose.position.x = pose(0);
   poseROS.pose.position.y = pose(1);
-  poseROS.pose.position.z = pose(2);
-  q = R_to_quaternion(ypr_to_R(pose.rows(3, 5)));
+  q = R_to_quaternion(ypr_to_R(pose.rows(2, 4)));
   poseROS.pose.orientation.w = q(0);
   poseROS.pose.orientation.x = q(1);
   poseROS.pose.orientation.y = q(2);
@@ -94,11 +91,11 @@ void odom_callback(const nav_msgs::Odometry::ConstPtr &msg) {
   posePub.publish(poseROS);
 
   // Velocity
-  colvec yprVel(3);
-  yprVel(0) = atan2(vel(1), vel(0));
-  yprVel(1) = -atan2(vel(2), norm(vel.rows(0, 1), 2));
-  yprVel(2) = 0;
-  q = R_to_quaternion(ypr_to_R(yprVel));
+  // colvec yprVel(3);
+  // yprVel(0) =  atan2(vel(1), vel(0));
+  // yprVel(1) = -atan2(vel(2), norm(vel.rows(0,1),2));
+  // yprVel(2) = 0;
+  // q = R_to_quaternion(ypr_to_R(yprVel));
   velROS.header.frame_id = string("world");
   velROS.header.stamp = msg->header.stamp;
   velROS.ns = string("velocity");
@@ -107,11 +104,11 @@ void odom_callback(const nav_msgs::Odometry::ConstPtr &msg) {
   velROS.action = visualization_msgs::Marker::ADD;
   velROS.pose.position.x = pose(0);
   velROS.pose.position.y = pose(1);
-  velROS.pose.position.z = pose(2);
-  velROS.pose.orientation.w = q(0);
-  velROS.pose.orientation.x = q(1);
-  velROS.pose.orientation.y = q(2);
-  velROS.pose.orientation.z = q(3);
+
+  velROS.pose.orientation.w = 1;
+  velROS.pose.orientation.x = 0;
+  velROS.pose.orientation.y = 0;
+  velROS.pose.orientation.z = 0;
   velROS.scale.x = norm(vel, 2);
   velROS.scale.y = 0.05;
   velROS.scale.z = 0.05;
@@ -443,10 +440,10 @@ int main(int argc, char **argv) {
   ros::NodeHandle n("~");
 
   n.param("mesh_resource", mesh_resource,
-          std::string("package://odom_visualization/meshes/chassis.dae"));
-  n.param("color/r", color_r, 155.0);
-  n.param("color/g", color_g, 120.0);
-  n.param("color/b", color_b, 15.0);
+          std::string("package://odom_visualization/meshes/hummingbird.mesh"));
+  n.param("color/r", color_r, 1.0);
+  n.param("color/g", color_g, 0.0);
+  n.param("color/b", color_b, 0.0);
   n.param("color/a", color_a, 1.0);
   n.param("origin", origin, false);
   n.param("robot_scale", scale, 2.0);

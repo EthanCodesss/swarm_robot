@@ -6,6 +6,10 @@
 #include <random>
 #include <ros/ros.h>
 
+#define PI 3.1415926
+#define DTR PI / 180.0 // Degree to Rad
+#define RTD 180.0 / PI // Rad to Degree
+
 ros::Subscriber _cmd_sub;
 ros::Publisher _odom_pub;
 
@@ -27,7 +31,6 @@ void pubOdom() {
   if (rcv_cmd) {
     odom.pose.pose.position.x = _cmd.position.x;
     odom.pose.pose.position.y = _cmd.position.y;
-    odom.pose.pose.position.z = _cmd.position.z;
 
     Eigen::Vector3d alpha =
         Eigen::Vector3d(_cmd.acceleration.x, _cmd.acceleration.y,

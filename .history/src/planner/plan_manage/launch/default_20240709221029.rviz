@@ -303,7 +303,7 @@ Visualization Manager:
                 mesh: true
               Queue Size: 100
               Value: true
-              Color: 250; 0; 0
+              Color: 250, 0, 0
             - Class: rviz/Image
               Enabled: false
               Image Topic: /drone_0_pcl_render_node/colordepth

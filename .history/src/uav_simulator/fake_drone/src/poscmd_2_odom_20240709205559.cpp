@@ -1,16 +1,20 @@
 #include "quadrotor_msgs/PositionCommand.h"
 #include <eigen3/Eigen/Dense>
+#include <fstream>
 #include <iostream>
 #include <math.h>
 #include <nav_msgs/Odometry.h>
 #include <random>
 #include <ros/ros.h>
+#define PI 3.1415926
+#define DTR PI / 180.0 // Degree to Rad
+#define RTD 180.0 / PI // Rad to Degree
 
 ros::Subscriber _cmd_sub;
 ros::Publisher _odom_pub;
 
 quadrotor_msgs::PositionCommand _cmd;
-double _init_x, _init_y, _init_z;
+double _init_x, _init_y;
 
 bool rcv_cmd = false;
 // fstream file
@@ -27,22 +31,21 @@ void pubOdom() {
   if (rcv_cmd) {
     odom.pose.pose.position.x = _cmd.position.x;
     odom.pose.pose.position.y = _cmd.position.y;
-    odom.pose.pose.position.z = _cmd.position.z;
 
-    Eigen::Vector3d alpha =
-        Eigen::Vector3d(_cmd.acceleration.x, _cmd.acceleration.y,
-                        _cmd.acceleration.z) +
-        9.8 * Eigen::Vector3d(0, 0, 1);
-    Eigen::Vector3d xC(cos(_cmd.yaw), sin(_cmd.yaw), 0);
-    Eigen::Vector3d yC(-sin(_cmd.yaw), cos(_cmd.yaw), 0);
-    Eigen::Vector3d xB = (yC.cross(alpha)).normalized();
-    Eigen::Vector3d yB = (alpha.cross(xB)).normalized();
-    Eigen::Vector3d zB = xB.cross(yB);
-    Eigen::Matrix3d R;
-    R.col(0) = xB;
-    R.col(1) = yB;
-    R.col(2) = zB;
-    Eigen::Quaterniond q(R);
+    // Eigen::Vector3d alpha =
+    //     Eigen::Vector3d(_cmd.acceleration.x, _cmd.acceleration.y,
+    //                     _cmd.acceleration.z) +
+    //     9.8 * Eigen::Vector3d(0, 0, 1);
+    // Eigen::Vector3d xC(cos(_cmd.yaw), sin(_cmd.yaw), 0);
+    // Eigen::Vector3d yC(-sin(_cmd.yaw), cos(_cmd.yaw), 0);
+    // Eigen::Vector3d xB = (yC.cross(alpha)).normalized();
+    // Eigen::Vector3d yB = (alpha.cross(xB)).normalized();
+    // Eigen::Vector3d zB = xB.cross(yB);
+    // Eigen::Matrix3d R;
+    // R.col(0) = xB;
+    // R.col(1) = yB;
+    // R.col(2) = zB;
+    // Eigen::Quaterniond q(R);
     odom.pose.pose.orientation.w = q.w();
     odom.pose.pose.orientation.x = q.x();
     odom.pose.pose.orientation.y = q.y();
