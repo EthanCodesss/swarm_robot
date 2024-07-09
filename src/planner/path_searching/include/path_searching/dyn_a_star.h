@@ -26,6 +26,8 @@ struct GridNode
 	{
 		UNDEFINED
 	};
+	// 表示为3个整数的向量
+	// fix
 	Eigen::Vector3i index;
 
 	double gScore{inf}, fScore{inf};
@@ -52,14 +54,14 @@ private:
 	double getManhHeu(GridNodePtr node1, GridNodePtr node2);
 	double getEuclHeu(GridNodePtr node1, GridNodePtr node2);
 	inline double getHeu(GridNodePtr node1, GridNodePtr node2);
-
+	// fix
 	bool ConvertToIndexAndAdjustStartEndPoints(const Eigen::Vector3d start_pt, const Eigen::Vector3d end_pt, Eigen::Vector3i &start_idx, Eigen::Vector3i &end_idx);
-
+	// fix
 	inline Eigen::Vector3d Index2Coord(const Eigen::Vector3i &index) const;
 	inline bool Coord2Index(const Eigen::Vector3d &pt, Eigen::Vector3i &idx) const;
 
 	//bool (*checkOccupancyPtr)( const Eigen::Vector3d &pos );
-	
+	//fix, 这里pos 可以将z设为0
 	inline bool checkOccupancy(const Eigen::Vector3d &pos) { return (bool)grid_map_->getInflateOccupancy(pos); }
 	inline bool checkOccupancy_esdf(const Eigen::Vector3d &pos){
 		const double dist = 0.2;
@@ -98,11 +100,11 @@ public:
 	~AStar();
 
 	void initGridMap(GridMap::Ptr occ_map, const Eigen::Vector3i pool_size);
-
+	//fix
 	bool AstarSearch(const double step_size, Eigen::Vector3d start_pt, Eigen::Vector3d end_pt, bool use_esdf_check);
 
 	std::vector<Eigen::Vector3d> getPath();
-
+	// fix
 	std::vector<Eigen::Vector3d> astarSearchAndGetSimplePath(const double step_size, Eigen::Vector3d start_pt, Eigen::Vector3d end_pt);
 };
 

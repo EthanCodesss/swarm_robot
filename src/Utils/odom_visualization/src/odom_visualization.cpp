@@ -246,8 +246,10 @@ void odom_callback(const nav_msgs::Odometry::ConstPtr& msg)
 
   // Color Coded Trajectory
   static colvec ppose = pose;
+  // 声明了一个静态变量, 可以跨作用域
   static ros::Time pt = msg->header.stamp;
   ros::Time t = msg->header.stamp;
+  // publish trajectory
   if ((t - pt).toSec() > 0.5)
   {
     trajROS.header.frame_id = string("world");
@@ -293,6 +295,7 @@ void odom_callback(const nav_msgs::Odometry::ConstPtr& msg)
   // Sensor availability
   sensorROS.header.frame_id = string("world");
   sensorROS.header.stamp    = msg->header.stamp;
+  // 设置命名空间
   sensorROS.ns              = string("sensor");
   sensorROS.type            = visualization_msgs::Marker::TEXT_VIEW_FACING;
   sensorROS.action          = visualization_msgs::Marker::ADD;  
@@ -344,7 +347,8 @@ void odom_callback(const nav_msgs::Odometry::ConstPtr& msg)
     colvec ypr = R_to_ypr(quaternion_to_R(q));
     ypr(0)    += 45.0*PI/180.0;
     q          = R_to_quaternion(ypr_to_R(ypr)); 
-  }  
+  } 
+  // 修改这里为 meshROS.pose.orientation =  Euler_to_Quat(0, 0, inter(qi,2))
   meshROS.pose.orientation.w = q(0);
   meshROS.pose.orientation.x = q(1);
   meshROS.pose.orientation.y = q(2);
