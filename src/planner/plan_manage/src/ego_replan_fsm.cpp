@@ -38,7 +38,6 @@ namespace ego_planner
     {
       nh.param("fsm/waypoint" + to_string(i) + "_x", waypoints_[i][0], -1.0);
       nh.param("fsm/waypoint" + to_string(i) + "_y", waypoints_[i][1], -1.0);
-      nh.param("fsm/waypoint" + to_string(i) + "_z", waypoints_[i][2], -1.0);
     }
 
     nh.param("fsm/goal_num", goal_num_, -1);
@@ -46,14 +45,12 @@ namespace ego_planner
     {
       nh.param("fsm/target" + to_string(i) + "_x", goalpoints_[i][0], -1.0);
       nh.param("fsm/target" + to_string(i) + "_y", goalpoints_[i][1], -1.0);
-      nh.param("fsm/target" + to_string(i) + "_z", goalpoints_[i][2], -1.0);
     }
 
     for (int i = 0; i < 7; i++)
     {
       nh.param("global_goal/relative_pos_" + to_string(i) + "/x", swarm_relative_pts_[i][0], -1.0);
       nh.param("global_goal/relative_pos_" + to_string(i) + "/y", swarm_relative_pts_[i][1], -1.0);
-      nh.param("global_goal/relative_pos_" + to_string(i) + "/z", swarm_relative_pts_[i][2], -1.0);
     }
 
     nh.param("global_goal/swarm_scale", swarm_scale_, 1.0);
@@ -220,7 +217,7 @@ namespace ego_planner
       double t_cur = ros::Time::now().toSec() - info->start_time;
       t_cur = min(info->duration, t_cur);
 
-      Eigen::Vector3d pos = info->traj.getPos(t_cur);
+      Eigen::Vector2d pos = info->traj.getPos(t_cur);
 
       if ((local_target_pt_ - end_pt_).norm() < 0.1) // local target close to the global target
       {
@@ -299,7 +296,7 @@ namespace ego_planner
     /* ---------- check trajectory ---------- */
     constexpr double time_step = 0.01;
     double t_cur = ros::Time::now().toSec() - info->start_time;
-    Eigen::Vector3d p_cur = info->traj.getPos(t_cur);
+    Eigen::Vector2d p_cur = info->traj.getPos(t_cur);
     const double CLEARANCE = 0.8 * planner_manager_->getSwarmClearance();
     double t_cur_global = ros::Time::now().toSec();
     double t_2_3 = planner_manager_->ploy_traj_opt_->getCollisionCheckTimeEnd();
@@ -333,7 +330,7 @@ namespace ego_planner
         if (t_X > planner_manager_->traj_.swarm_traj.at(id).duration)
           continue;
 
-        Eigen::Vector3d swarm_pridicted = planner_manager_->traj_.swarm_traj.at(id).traj.getPos(t_X);
+        Eigen::Vector2d swarm_pridicted = planner_manager_->traj_.swarm_traj.at(id).traj.getPos(t_X);
         double dist = (p_cur - swarm_pridicted).norm();
 
         if (dist < CLEARANCE)
@@ -392,14 +389,14 @@ namespace ego_planner
     init_pt_ = odom_pos_;
 
     bool success = false;
-    end_pt_ << msg->pose.position.x, msg->pose.position.y, 1.0;
+    end_pt_ << msg->pose.position.x, msg->pose.position.y;
 
-    std::vector<Eigen::Vector3d> one_pt_wps;
+    std::vector<Eigen::Vector2d> one_pt_wps;
     one_pt_wps.push_back(end_pt_);
 
     success = planner_manager_->planGlobalTrajWaypoints(
-        odom_pos_, odom_vel_, Eigen::Vector3d::Zero(),
-        one_pt_wps, Eigen::Vector3d::Zero(), Eigen::Vector3d::Zero());
+        odom_pos_, odom_vel_, Eigen::Vector2d::Zero(),
+        one_pt_wps, Eigen::Vector2d::Zero(), Eigen::Vector2d::Zero());
 
     visualization_->displayGoalPoint(end_pt_, Eigen::Vector4d(0, 0.5, 0.5, 1), 0.3, 0);
 
@@ -408,7 +405,7 @@ namespace ego_planner
       /*** display ***/
       constexpr double step_size_t = 0.1;
       int i_end = floor(planner_manager_->traj_.global_traj.duration / step_size_t);
-      vector<Eigen::Vector3d> gloabl_traj(i_end);
+      vector<Eigen::Vector2d> gloabl_traj(i_end);
       for (int i = 0; i < i_end; i++)
       {
         gloabl_traj[i] = planner_manager_->traj_.global_traj.traj.getPos(i * step_size_t);
@@ -437,11 +434,10 @@ namespace ego_planner
   {
     odom_pos_(0) = msg->pose.pose.position.x;
     odom_pos_(1) = msg->pose.pose.position.y;
-    odom_pos_(2) = msg->pose.pose.position.z;
+
 
     odom_vel_(0) = msg->twist.twist.linear.x;
     odom_vel_(1) = msg->twist.twist.linear.y;
-    odom_vel_(2) = msg->twist.twist.linear.z;
 
     odom_orient_.w() = msg->pose.pose.orientation.w;
     odom_orient_.x() = msg->pose.pose.orientation.x;
@@ -505,8 +501,6 @@ namespace ego_planner
           msg->coef_x[i6 + 3], msg->coef_x[i6 + 4], msg->coef_x[i6 + 5];
       cMats[i].row(1) << msg->coef_y[i6 + 0], msg->coef_y[i6 + 1], msg->coef_y[i6 + 2],
           msg->coef_y[i6 + 3], msg->coef_y[i6 + 4], msg->coef_y[i6 + 5];
-      cMats[i].row(2) << msg->coef_z[i6 + 0], msg->coef_z[i6 + 1], msg->coef_z[i6 + 2],
-          msg->coef_z[i6 + 3], msg->coef_z[i6 + 4], msg->coef_z[i6 + 5];
 
       dura[i] = msg->duration[i];
     }
@@ -612,7 +606,7 @@ namespace ego_planner
     msg.duration.resize(piece_num);
     msg.coef_x.resize(6 * piece_num);
     msg.coef_y.resize(6 * piece_num);
-    msg.coef_z.resize(6 * piece_num);
+
     for (int i = 0; i < piece_num; ++i)
     {
       msg.duration[i] = durs(i);
@@ -623,7 +617,6 @@ namespace ego_planner
       {
         msg.coef_x[i6 + j] = cMat(0, j);
         msg.coef_y[i6 + j] = cMat(1, j);
-        msg.coef_z[i6 + j] = cMat(2, j);
       }
     }
   }
@@ -639,23 +632,22 @@ namespace ego_planner
     bool success = false;
     swarm_central_pos_(0) = msg->pose.position.x;
     swarm_central_pos_(1) = msg->pose.position.y;
-    swarm_central_pos_(2) = 0.5;
+
 
     int id = planner_manager_->pp_.drone_id;
 
-    Eigen::Vector3d relative_pos;
+    Eigen::Vector2d relative_pos;
     relative_pos << swarm_relative_pts_[id][0],
-                    swarm_relative_pts_[id][1],
-                    swarm_relative_pts_[id][2];
+                    swarm_relative_pts_[id][1];
     end_pt_ = swarm_central_pos_ + swarm_scale_ * relative_pos;
 
-    std::vector<Eigen::Vector3d> one_pt_wps;
+    std::vector<Eigen::Vector2d> one_pt_wps;
     one_pt_wps.push_back(end_pt_);
 
 
     success = planner_manager_->planGlobalTrajWaypoints(
-        odom_pos_, odom_vel_, Eigen::Vector3d::Zero(),
-        one_pt_wps, Eigen::Vector3d::Zero(), Eigen::Vector3d::Zero());
+        odom_pos_, odom_vel_, Eigen::Vector2d::Zero(),
+        one_pt_wps, Eigen::Vector2d::Zero(), Eigen::Vector2d::Zero());
 
     visualization_->displayGoalPoint(end_pt_, Eigen::Vector4d(0, 0.5, 0.5, 1), 0.3, 0);
 
@@ -664,7 +656,7 @@ namespace ego_planner
       /*** display ***/
       constexpr double step_size_t = 0.1;
       int i_end = floor(planner_manager_->traj_.global_traj.duration / step_size_t);
-      vector<Eigen::Vector3d> gloabl_traj(i_end);
+      vector<Eigen::Vector2d> gloabl_traj(i_end);
       for (int i = 0; i < i_end; i++)
       {
         gloabl_traj[i] = planner_manager_->traj_.global_traj.traj.getPos(i * step_size_t);
@@ -690,7 +682,7 @@ namespace ego_planner
   }
   void EGOReplanFSM::planGlobalTrajbyGivenWps()
   {
-    std::vector<Eigen::Vector3d> wps;
+    std::vector<Eigen::Vector2d> wps;
     if (target_type_ == TARGET_TYPE::PRESET_TARGET)
     {
       wps.resize(waypoint_num_);
@@ -698,7 +690,6 @@ namespace ego_planner
       {
         wps[i](0) = waypoints_[i][0];
         wps[i](1) = waypoints_[i][1];
-        wps[i](2) = waypoints_[i][2];
       }
       end_pt_ = wps.back();
       for (size_t i = 0; i < (size_t)waypoint_num_; i++)
@@ -710,17 +701,17 @@ namespace ego_planner
     else
       return;
 
-    bool success = planner_manager_->planGlobalTrajWaypoints(odom_pos_, Eigen::Vector3d::Zero(),
-                                                             Eigen::Vector3d::Zero(), wps,
-                                                             Eigen::Vector3d::Zero(),
-                                                             Eigen::Vector3d::Zero());
+    bool success = planner_manager_->planGlobalTrajWaypoints(odom_pos_, Eigen::Vector2d::Zero(),
+                                                             Eigen::Vector2d::Zero(), wps,
+                                                             Eigen::Vector2d::Zero(),
+                                                             Eigen::Vector2d::Zero());
 
     if (success)
     {
       /*** display ***/
       constexpr double step_size_t = 0.1;
       int i_end = floor(planner_manager_->traj_.global_traj.duration / step_size_t);
-      std::vector<Eigen::Vector3d> gloabl_traj(i_end);
+      std::vector<Eigen::Vector2d> gloabl_traj(i_end);
       for (int i = 0; i < i_end; i++)
       {
         gloabl_traj[i] = planner_manager_->traj_.global_traj.traj.getPos(i * step_size_t);
@@ -785,7 +776,7 @@ namespace ego_planner
         planning_horizen_, start_pt_, end_pt_,
         local_target_pt_, local_target_vel_);
 
-    Eigen::Vector3d desired_start_pt, desired_start_vel, desired_start_acc;
+    Eigen::Vector2d desired_start_pt, desired_start_vel, desired_start_acc;
     double desired_start_time;
     if (have_local_traj_ && use_formation)
     {
@@ -823,7 +814,7 @@ namespace ego_planner
     return plan_success;
   }
 
-  bool EGOReplanFSM::callEmergencyStop(Eigen::Vector3d stop_pos)
+  bool EGOReplanFSM::callEmergencyStop(Eigen::Vector2d stop_pos)
   {
     planner_manager_->EmergencyStop(stop_pos);
 

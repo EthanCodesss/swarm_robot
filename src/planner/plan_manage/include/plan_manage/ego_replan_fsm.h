@@ -58,10 +58,15 @@ namespace ego_planner
     /* parameters */
     int target_type_; // 1 mannual select, 2 hard code
     double no_replan_thresh_, replan_thresh_;
-    double waypoints_[50][3];
+
     int waypoint_num_;
     int goal_num_;
-    double goalpoints_[50][3];
+
+    /* fix */
+    double waypoints_[50][2];
+    double goalpoints_[50][2];
+    /* fix */
+
     double planning_horizen_, planning_horizen_time_;
     double emergency_time_;
     bool flag_realworld_experiment_;
@@ -70,21 +75,22 @@ namespace ego_planner
     double replan_trajectory_time_;
 
      // global goal setting for swarm
-    Eigen::Vector3d swarm_central_pos_;
-    double swarm_relative_pts_[50][3];
+    /* fix */
+    Eigen::Vector2d swarm_central_pos_;
+    double swarm_relative_pts_[50][2];
     double swarm_scale_;
 
     /* planning data */
     bool have_trigger_, have_target_, have_odom_, have_new_target_, have_recv_pre_agent_, have_local_traj_;
     FSM_EXEC_STATE exec_state_;
     int continously_called_times_{0};
-
-    Eigen::Vector3d odom_pos_, odom_vel_, odom_acc_; // odometry state
+    /* fix */
+    Eigen::Vector2d odom_pos_, odom_vel_, odom_acc_; // odometry state
     Eigen::Quaterniond odom_orient_;
 
-    Eigen::Vector3d init_pt_, start_pt_, start_vel_, start_acc_, start_yaw_; // start state
-    Eigen::Vector3d end_pt_, end_vel_;                                       // goal state
-    Eigen::Vector3d local_target_pt_, local_target_vel_;                     // local target state
+    Eigen::Vector2d init_pt_, start_pt_, start_vel_, start_acc_, start_yaw_; // start state
+    Eigen::Vector2d end_pt_, end_vel_;                                       // goal state
+    Eigen::Vector2d local_target_pt_, local_target_vel_;                     // local target state
     int current_wp_;
 
     bool flag_escape_emergency_;
@@ -106,7 +112,8 @@ namespace ego_planner
     fstream result_file_;
     /* helper functions */
     bool callReboundReplan(bool flag_use_poly_init, bool flag_randomPolyTraj, bool use_formation); // front-end and back-end method
-    bool callEmergencyStop(Eigen::Vector3d stop_pos);                          // front-end and back-end method
+    /* fix */
+    bool callEmergencyStop(Eigen::Vector2d stop_pos);                          // front-end and back-end method
     bool planFromGlobalTraj(const int trial_times = 1);
     bool planFromLocalTraj(bool flag_use_poly_init, bool use_formation);
     

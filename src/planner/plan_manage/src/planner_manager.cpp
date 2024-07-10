@@ -38,11 +38,11 @@ namespace ego_planner
     visualization_ = vis;
   }
 
-  bool EGOPlannerManager::computeInitReferenceState(const Eigen::Vector3d &start_pt,
-                                                    const Eigen::Vector3d &start_vel,
-                                                    const Eigen::Vector3d &start_acc,
-                                                    const Eigen::Vector3d &local_target_pt,
-                                                    const Eigen::Vector3d &local_target_vel,
+  bool EGOPlannerManager::computeInitReferenceState(const Eigen::Vector2d &start_pt,
+                                                    const Eigen::Vector2d &start_vel,
+                                                    const Eigen::Vector2d &start_acc,
+                                                    const Eigen::Vector2d &local_target_pt,
+                                                    const Eigen::Vector2d &local_target_vel,
                                                     const double &ts,
                                                     poly_traj::MinJerkOpt &initMJO,
                                                     const bool flag_polyInit)
@@ -54,16 +54,16 @@ namespace ego_planner
     {
       flag_first_call = false;
       /* basic params */
-      Eigen::Matrix3d headState, tailState;
+      Eigen::Matrix<double, 2, 3> headState, tailState;
       Eigen::MatrixXd innerPs;
       Eigen::VectorXd piece_dur_vec;
       int piece_nums;
       poly_traj::Trajectory traj;
-      vector<Eigen::Vector3d> simple_path;
+      vector<Eigen::Vector2d> simple_path;
       constexpr double init_of_init_totaldur = 2.0;
 
       headState << start_pt, start_vel, start_acc;
-      tailState << local_target_pt, local_target_vel, Eigen::Vector3d::Zero();
+      tailState << local_target_pt, local_target_vel, Eigen::Vector2d::Zero();
 
       /* step 1: A* search and generate init traj */
       Eigen::MatrixXd ctl_points;
@@ -73,12 +73,12 @@ namespace ego_planner
       traj = initMJO.getTraj();
 
       // show the init simple_path
-      vector<vector<Eigen::Vector3d>> path_view;
+      vector<vector<Eigen::Vector2d>> path_view;
       path_view.push_back(simple_path);
       visualization_->displayAStarList(path_view, 0);
 
       // show the init traj for debug
-      std::vector<Eigen::Vector3d> point_set;
+      std::vector<Eigen::Vector2d> point_set;
       for (int i = 0; i < ctl_points.cols(); ++i)
         point_set.push_back(ctl_points.col(i));
       visualization_->displayInitPathListDebug(point_set, 0.2, 0);
@@ -102,11 +102,11 @@ namespace ego_planner
       if (piece_nums < 2)
         piece_nums = 2;
 
-      Eigen::Matrix3d headState, tailState;
-      Eigen::MatrixXd innerPs(3, piece_nums - 1);
+      Eigen::Matrix<double, 2, 3> headState, tailState;
+      Eigen::MatrixXd innerPs(2, piece_nums - 1);
       Eigen::VectorXd piece_dur_vec = Eigen::VectorXd::Constant(piece_nums, t_to_lc_tgt / piece_nums);
       headState << start_pt, start_vel, start_acc;
-      tailState << local_target_pt, local_target_vel, Eigen::Vector3d::Zero();
+      tailState << local_target_pt, local_target_vel, Eigen::Vector2d::Zero();
 
       double t = piece_dur_vec(0);
       for (int i = 0; i < piece_nums - 1; ++i)
@@ -136,9 +136,9 @@ namespace ego_planner
   }
 
   void EGOPlannerManager::getLocalTarget(
-      const double planning_horizen, const Eigen::Vector3d &start_pt,
-      const Eigen::Vector3d &global_end_pt, Eigen::Vector3d &local_target_pos,
-      Eigen::Vector3d &local_target_vel)
+      const double planning_horizen, const Eigen::Vector2d &start_pt,
+      const Eigen::Vector2d &global_end_pt, Eigen::Vector2d &local_target_pos,
+      Eigen::Vector2d &local_target_vel)
   {
     double t;
 
@@ -150,7 +150,7 @@ namespace ego_planner
          t < (traj_.global_traj.global_start_time + traj_.global_traj.duration);
          t += t_step)
     {
-      Eigen::Vector3d pos_t = traj_.global_traj.traj.getPos(t - traj_.global_traj.global_start_time);
+      Eigen::Vector2d pos_t = traj_.global_traj.traj.getPos(t - traj_.global_traj.global_start_time);
       double dist = (pos_t - start_pt).norm();
 
       if (dist >= planning_horizen)
@@ -169,7 +169,7 @@ namespace ego_planner
 
     if ((global_end_pt - local_target_pos).norm() < (pp_.max_vel_ * pp_.max_vel_) / (2 * pp_.max_acc_))
     {
-      local_target_vel = Eigen::Vector3d::Zero();
+      local_target_vel = Eigen::Vector2d::Zero();
     }
     else
     {
@@ -178,8 +178,8 @@ namespace ego_planner
   }
 
   bool EGOPlannerManager::reboundReplan(
-      const Eigen::Vector3d &start_pt, const Eigen::Vector3d &start_vel, const Eigen::Vector3d &start_acc,
-      const double trajectory_start_time, const Eigen::Vector3d &local_target_pt, const Eigen::Vector3d &local_target_vel,
+      const Eigen::Vector2d &start_pt, const Eigen::Vector2d &start_vel, const Eigen::Vector2d &start_acc,
+      const double trajectory_start_time, const Eigen::Vector2d &local_target_pt, const Eigen::Vector2d &local_target_vel,
       const bool flag_polyInit, const bool flag_randomPolyTraj,
       const bool use_formation, const bool have_local_traj)
   {
@@ -214,7 +214,7 @@ namespace ego_planner
 
     t_init = ros::Time::now() - t_start;
 
-    std::vector<Eigen::Vector3d> point_set;
+    std::vector<Eigen::Vector2d> point_set;
     for (int i = 0; i < cstr_pts.cols(); ++i)
       point_set.push_back(cstr_pts.col(i));
     visualization_->displayInitPathList(point_set, 0.2, 0);
@@ -223,13 +223,13 @@ namespace ego_planner
 
     /*** STEP 2: OPTIMIZE ***/
     bool flag_success = false;
-    vector<vector<Eigen::Vector3d>> vis_trajs;
+    vector<vector<Eigen::Vector2d>> vis_trajs;
 
     poly_traj::Trajectory initTraj = initMJO.getTraj();
     int PN = initTraj.getPieceNum();
     Eigen::MatrixXd all_pos = initTraj.getPositions();
-    Eigen::MatrixXd innerPts = all_pos.block(0, 1, 3, PN - 1);
-    Eigen::Matrix<double, 3, 3> headState, tailState;
+    Eigen::MatrixXd innerPts = all_pos.block(0, 1, 2, PN - 1);
+    Eigen::Matrix<double, 2, 3> headState, tailState;
     headState << initTraj.getJuncPos(0), initTraj.getJuncVel(0), initTraj.getJuncAcc(0);
     tailState << initTraj.getJuncPos(PN), initTraj.getJuncVel(PN), initTraj.getJuncAcc(PN);
     flag_success = ploy_traj_opt_->OptimizeTrajectory_lbfgs(headState, tailState,
@@ -275,9 +275,9 @@ namespace ego_planner
     return true;
   }
 
-  bool EGOPlannerManager::EmergencyStop(Eigen::Vector3d stop_pos)
+  bool EGOPlannerManager::EmergencyStop(Eigen::Vector2d stop_pos)
   {
-    auto ZERO = Eigen::Vector3d::Zero();
+    auto ZERO = Eigen::Vector2d::Zero();
     Eigen::Matrix<double, 3, 3> headState, tailState;
     headState << stop_pos, ZERO, ZERO;
     tailState = headState;
@@ -316,19 +316,19 @@ namespace ego_planner
   }
 
   bool EGOPlannerManager::planGlobalTrajWaypoints(
-      const Eigen::Vector3d &start_pos, const Eigen::Vector3d &start_vel,
-      const Eigen::Vector3d &start_acc, const std::vector<Eigen::Vector3d> &waypoints,
-      const Eigen::Vector3d &end_vel, const Eigen::Vector3d &end_acc)
+      const Eigen::Vector2d &start_pos, const Eigen::Vector2d &start_vel,
+      const Eigen::Vector2d &start_acc, const std::vector<Eigen::Vector2d> &waypoints,
+      const Eigen::Vector2d &end_vel, const Eigen::Vector2d &end_acc)
   {
     poly_traj::MinJerkOpt globalMJO;
-    Eigen::Matrix<double, 3, 3> headState, tailState;
+    Eigen::Matrix<double, 2, 3> headState, tailState;
     headState << start_pos, start_vel, start_acc;
     tailState << waypoints.back(), end_vel, end_acc;
     Eigen::MatrixXd innerPts;
 
     if (waypoints.size() > 1)
     {
-      innerPts.resize(3, waypoints.size() - 1);
+      innerPts.resize(2, waypoints.size() - 1);
       for (int i = 0; i < waypoints.size() - 1; i++)
         innerPts.col(i) = waypoints[i];
     }

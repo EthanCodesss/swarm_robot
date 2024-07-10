@@ -7,11 +7,10 @@ AStar::~AStar()
 {
     for (int i = 0; i < POOL_SIZE_(0); i++)
         for (int j = 0; j < POOL_SIZE_(1); j++)
-            for (int k = 0; k < POOL_SIZE_(2); k++)
-                delete GridNodeMap_[i][j][k];
+                delete GridNodeMap_[i][j];
 }
 
-void AStar::initGridMap(GridMap::Ptr occ_map, const Eigen::Vector3i pool_size)
+void AStar::initGridMap(GridMap::Ptr occ_map, const Eigen::Vector2i pool_size)
 {
     POOL_SIZE_ = pool_size;
     CENTER_IDX_ = pool_size / 2;
@@ -22,11 +21,7 @@ void AStar::initGridMap(GridMap::Ptr occ_map, const Eigen::Vector3i pool_size)
         GridNodeMap_[i] = new GridNodePtr *[POOL_SIZE_(1)];
         for (int j = 0; j < POOL_SIZE_(1); j++)
         {
-            GridNodeMap_[i][j] = new GridNodePtr[POOL_SIZE_(2)];
-            for (int k = 0; k < POOL_SIZE_(2); k++)
-            {
-                GridNodeMap_[i][j][k] = new GridNode;
-            }
+                GridNodeMap_[i][j] = new GridNode;
         }
     }
 
@@ -37,26 +32,14 @@ double AStar::getDiagHeu(GridNodePtr node1, GridNodePtr node2)
 {
     double dx = abs(node1->index(0) - node2->index(0));
     double dy = abs(node1->index(1) - node2->index(1));
-    double dz = abs(node1->index(2) - node2->index(2));
+
 
     double h = 0.0;
-    int diag = min(min(dx, dy), dz);
+    int diag = min(dx, dy);
     dx -= diag;
     dy -= diag;
-    dz -= diag;
 
-    if (dx == 0)
-    {
-        h = 1.0 * sqrt(3.0) * diag + sqrt(2.0) * min(dy, dz) + 1.0 * abs(dy - dz);
-    }
-    if (dy == 0)
-    {
-        h = 1.0 * sqrt(3.0) * diag + sqrt(2.0) * min(dx, dz) + 1.0 * abs(dx - dz);
-    }
-    if (dz == 0)
-    {
-        h = 1.0 * sqrt(3.0) * diag + sqrt(2.0) * min(dx, dy) + 1.0 * abs(dx - dy);
-    }
+    h = 1.0 * sqrt(3.0) * diag + sqrt(2.0) * min(dx, dy) + 1.0 * abs(dx - dy);
     return h;
 }
 
@@ -64,9 +47,8 @@ double AStar::getManhHeu(GridNodePtr node1, GridNodePtr node2)
 {
     double dx = abs(node1->index(0) - node2->index(0));
     double dy = abs(node1->index(1) - node2->index(1));
-    double dz = abs(node1->index(2) - node2->index(2));
 
-    return dx + dy + dz;
+    return dx + dy;
 }
 
 double AStar::getEuclHeu(GridNodePtr node1, GridNodePtr node2)
@@ -88,7 +70,7 @@ vector<GridNodePtr> AStar::retrievePath(GridNodePtr current)
     return path;
 }
 
-bool AStar::ConvertToIndexAndAdjustStartEndPoints(Vector3d start_pt, Vector3d end_pt, Vector3i &start_idx, Vector3i &end_idx)
+bool AStar::ConvertToIndexAndAdjustStartEndPoints(Vector2d start_pt, Vector2d end_pt, Vector2i &start_idx, Vector2i &end_idx)
 {
     if (!Coord2Index(start_pt, start_idx) || !Coord2Index(end_pt, end_idx))
         return false;
@@ -118,7 +100,7 @@ bool AStar::ConvertToIndexAndAdjustStartEndPoints(Vector3d start_pt, Vector3d en
     return true;
 }
 
-bool AStar::AstarSearch(const double step_size, Vector3d start_pt, Vector3d end_pt, bool use_esdf_check)
+bool AStar::AstarSearch(const double step_size, Vector2d start_pt, Vector2d end_pt, bool use_esdf_check)
 {
     ros::Time time_1 = ros::Time::now();
     ++rounds_;
@@ -127,7 +109,7 @@ bool AStar::AstarSearch(const double step_size, Vector3d start_pt, Vector3d end_
     inv_step_size_ = 1 / step_size;
     center_ = (start_pt + end_pt) / 2;
 
-    Vector3i start_idx, end_idx;
+    Vector2i start_idx, end_idx;
     if (!ConvertToIndexAndAdjustStartEndPoints(start_pt, end_pt, start_idx, end_idx))
     {
         ROS_ERROR("Unable to handle the initial or end point, force return!");
@@ -137,8 +119,8 @@ bool AStar::AstarSearch(const double step_size, Vector3d start_pt, Vector3d end_
     // if ( start_pt(0) > -1 && start_pt(0) < 0 )
     //     cout << "start_pt=" << start_pt.transpose() << " end_pt=" << end_pt.transpose() << endl;
 
-    GridNodePtr startPtr = GridNodeMap_[start_idx(0)][start_idx(1)][start_idx(2)];
-    GridNodePtr endPtr = GridNodeMap_[end_idx(0)][end_idx(1)][end_idx(2)];
+    GridNodePtr startPtr = GridNodeMap_[start_idx(0)][start_idx(1)];
+    GridNodePtr endPtr = GridNodeMap_[end_idx(0)][end_idx(1)];
 
     std::priority_queue<GridNodePtr, std::vector<GridNodePtr>, NodeComparator> empty;
     openSet_.swap(empty);
@@ -168,7 +150,7 @@ bool AStar::AstarSearch(const double step_size, Vector3d start_pt, Vector3d end_
         // if ( num_iter < 10000 )
         //     cout << "current=" << current->index.transpose() << endl;
 
-        if (current->index(0) == endPtr->index(0) && current->index(1) == endPtr->index(1) && current->index(2) == endPtr->index(2))
+        if (current->index(0) == endPtr->index(0) && current->index(1) == endPtr->index(1))
         {
             ros::Time time_2 = ros::Time::now();
             printf("\033[34mA star iter:%d, time:%.3f\033[0m\n",num_iter, (time_2 - time_1).toSec()*1000);
@@ -180,23 +162,20 @@ bool AStar::AstarSearch(const double step_size, Vector3d start_pt, Vector3d end_
         current->state = GridNode::CLOSEDSET; //move current node from open set to closed set.
 
         for (int dx = -1; dx <= 1; dx++)
-            for (int dy = -1; dy <= 1; dy++)
-                for (int dz = -1; dz <= 1; dz++)
-                {
-                    if (dx == 0 && dy == 0 && dz == 0)
+            for (int dy = -1; dy <= 1; dy++){
+                    if (dx == 0 && dy == 0)
                         continue;
 
-                    Vector3i neighborIdx;
+                    Vector2i neighborIdx;
                     neighborIdx(0) = (current->index)(0) + dx;
                     neighborIdx(1) = (current->index)(1) + dy;
-                    neighborIdx(2) = (current->index)(2) + dz;
 
-                    if (neighborIdx(0) < 1 || neighborIdx(0) >= POOL_SIZE_(0) - 1 || neighborIdx(1) < 1 || neighborIdx(1) >= POOL_SIZE_(1) - 1 || neighborIdx(2) < 1 || neighborIdx(2) >= POOL_SIZE_(2) - 1)
+                    if (neighborIdx(0) < 1 || neighborIdx(0) >= POOL_SIZE_(0) - 1 || neighborIdx(1) < 1 || neighborIdx(1) >= POOL_SIZE_(1) - 1)
                     {
                         continue;
                     }
 
-                    neighborPtr = GridNodeMap_[neighborIdx(0)][neighborIdx(1)][neighborIdx(2)];
+                    neighborPtr = GridNodeMap_[neighborIdx(0)][neighborIdx(1)];
                     neighborPtr->index = neighborIdx;
 
                     bool flag_explored = neighborPtr->rounds == rounds_;
@@ -216,7 +195,7 @@ bool AStar::AstarSearch(const double step_size, Vector3d start_pt, Vector3d end_
                             continue;
                     }
                     
-                    double static_cost = sqrt(dx * dx + dy * dy + dz * dz);
+                    double static_cost = sqrt(dx * dx + dy * dy);
                     tentative_gScore = current->gScore + static_cost;
 
                     if (!flag_explored)
@@ -251,9 +230,9 @@ bool AStar::AstarSearch(const double step_size, Vector3d start_pt, Vector3d end_
     return false;
 }
 
-vector<Vector3d> AStar::getPath()
+vector<Vector2d> AStar::getPath()
 {
-    vector<Vector3d> path;
+    vector<Vector2d> path;
 
     for (auto ptr : gridPath_)
         path.push_back(Index2Coord(ptr->index));
@@ -262,10 +241,10 @@ vector<Vector3d> AStar::getPath()
     return path;
 }
 
-vector<Vector3d> AStar::astarSearchAndGetSimplePath(const double step_size, Vector3d start_pt, Vector3d end_pt){
+vector<Vector2d> AStar::astarSearchAndGetSimplePath(const double step_size, Vector2d start_pt, Vector2d end_pt){
     // call astar search and get the path
     AstarSearch(step_size, start_pt, end_pt, true);
-    vector<Vector3d> path = getPath();
+    vector<Vector2d> path = getPath();
     bool is_show_debug = false;
 
     // I don't know why, but only try A* again
@@ -276,7 +255,7 @@ vector<Vector3d> AStar::astarSearchAndGetSimplePath(const double step_size, Vect
     }
     
     // generate the simple path
-    vector<Vector3d> simple_path;
+    vector<Vector2d> simple_path;
     int size = path.size();
     if (size <= 2){
         ROS_WARN("the path only have two points");
@@ -284,19 +263,19 @@ vector<Vector3d> AStar::astarSearchAndGetSimplePath(const double step_size, Vect
     }
         
     int end_idx   = 1;
-    Vector3d cut_start = path[0];
+    Vector2d cut_start = path[0];
     simple_path.push_back(cut_start);
     
     bool finish = false;
     while (!finish) {
         for (int i = end_idx; i < size; i++){
             bool is_safe = true;
-            Vector3d check_pt = path[i];
+            Vector2d check_pt = path[i];
             int check_num = ceil((check_pt - cut_start).norm() / 0.01);
             // check collision
             for (int j=0; j<=check_num; j++){
                 double alpha = double(1.0 / check_num) * j;
-                Vector3d check_safe_pt = (1 - alpha) * cut_start + alpha * check_pt;
+                Vector2d check_safe_pt = (1 - alpha) * cut_start + alpha * check_pt;
                 if (checkOccupancy_esdf(check_safe_pt)){
                     is_safe = false;
                     break;
@@ -372,7 +351,7 @@ vector<Vector3d> AStar::astarSearchAndGetSimplePath(const double step_size, Vect
         for (int i=0; i<num-1; i++){
             double leng = (simple_path[i+1] - simple_path[i]).norm();
             if (leng > length_threshold){
-                Vector3d insert_point = (simple_path[i+1] + simple_path[i]) / 2;
+                Vector2d insert_point = (simple_path[i+1] + simple_path[i]) / 2;
                 simple_path.insert(simple_path.begin()+i+1 ,insert_point);
                 too_long_flag = true;
                 break;

@@ -20,7 +20,7 @@ struct GridNode {
   enum enum_state state { UNDEFINED };
   // 表示为3个整数的向量
   // fix
-  Eigen::Vector3i index;
+  Eigen::Vector2i index;
 
   double gScore{inf}, fScore{inf};
   GridNodePtr cameFrom{NULL};
@@ -46,21 +46,21 @@ private:
   double getEuclHeu(GridNodePtr node1, GridNodePtr node2);
   inline double getHeu(GridNodePtr node1, GridNodePtr node2);
   // fix
-  bool ConvertToIndexAndAdjustStartEndPoints(const Eigen::Vector3d start_pt,
-                                             const Eigen::Vector3d end_pt,
-                                             Eigen::Vector3i &start_idx,
-                                             Eigen::Vector3i &end_idx);
+  bool ConvertToIndexAndAdjustStartEndPoints(const Eigen::Vector2d start_pt,
+                                             const Eigen::Vector2d end_pt,
+                                             Eigen::Vector2i &start_idx,
+                                             Eigen::Vector2i &end_idx);
   // fix
-  inline Eigen::Vector3d Index2Coord(const Eigen::Vector3i &index) const;
-  inline bool Coord2Index(const Eigen::Vector3d &pt,
-                          Eigen::Vector3i &idx) const;
+  inline Eigen::Vector2d Index2Coord(const Eigen::Vector2i &index) const;
+  inline bool Coord2Index(const Eigen::Vector2d &pt,
+                          Eigen::Vector2i &idx) const;
 
-  // bool (*checkOccupancyPtr)( const Eigen::Vector3d &pos );
+  // bool (*checkOccupancyPtr)( const Eigen::Vector2d &pos );
   // fix, 这里pos 可以将z设为0
-  inline bool checkOccupancy(const Eigen::Vector3d &pos) {
+  inline bool checkOccupancy(const Eigen::Vector2d &pos) {
     return (bool)grid_map_->getInflateOccupancy(pos);
   }
-  inline bool checkOccupancy_esdf(const Eigen::Vector3d &pos) {
+  inline bool checkOccupancy_esdf(const Eigen::Vector2d &pos) {
     const double dist = 0.2;
     if (grid_map_->getDistance(pos) < dist)
       return true;
@@ -68,7 +68,7 @@ private:
       return false;
   }
 
-  // inline bool checkOccupancy(const Eigen::Vector3d &pos) {
+  // inline bool checkOccupancy(const Eigen::Vector2d &pos) {
   // 	const double dist = 0.2;
   // 	if (grid_map_->getDistance(pos) < dist )
   // 		return true;
@@ -79,8 +79,8 @@ private:
   std::vector<GridNodePtr> retrievePath(GridNodePtr current);
 
   double step_size_, inv_step_size_;
-  Eigen::Vector3d center_;
-  Eigen::Vector3i CENTER_IDX_, POOL_SIZE_;
+  Eigen::Vector2d center_;
+  Eigen::Vector2i CENTER_IDX_, POOL_SIZE_;
   const double tie_breaker_ = 1.0 + 1.0 / 10000;
 
   std::vector<GridNodePtr> gridPath_;
@@ -97,35 +97,35 @@ public:
   AStar(){};
   ~AStar();
 
-  void initGridMap(GridMap::Ptr occ_map, const Eigen::Vector3i pool_size);
+  void initGridMap(GridMap::Ptr occ_map, const Eigen::Vector2i pool_size);
   // fix
-  bool AstarSearch(const double step_size, Eigen::Vector3d start_pt,
-                   Eigen::Vector3d end_pt, bool use_esdf_check);
+  bool AstarSearch(const double step_size, Eigen::Vector2d start_pt,
+                   Eigen::Vector2d end_pt, bool use_esdf_check);
 
-  std::vector<Eigen::Vector3d> getPath();
+  std::vector<Eigen::Vector2d> getPath();
   // fix
-  std::vector<Eigen::Vector3d>
-  astarSearchAndGetSimplePath(const double step_size, Eigen::Vector3d start_pt,
-                              Eigen::Vector3d end_pt);
+  std::vector<Eigen::Vector2d>
+  astarSearchAndGetSimplePath(const double step_size, Eigen::Vector2d start_pt,
+                              Eigen::Vector2d end_pt);
 };
 
 inline double AStar::getHeu(GridNodePtr node1, GridNodePtr node2) {
   return tie_breaker_ * getDiagHeu(node1, node2);
 }
 
-inline Eigen::Vector3d AStar::Index2Coord(const Eigen::Vector3i &index) const {
+inline Eigen::Vector2d AStar::Index2Coord(const Eigen::Vector2i &index) const {
   return ((index - CENTER_IDX_).cast<double>() * step_size_) + center_;
 };
 
-inline bool AStar::Coord2Index(const Eigen::Vector3d &pt,
-                               Eigen::Vector3i &idx) const {
-  idx = ((pt - center_) * inv_step_size_ + Eigen::Vector3d(0.5, 0.5, 0.5))
+inline bool AStar::Coord2Index(const Eigen::Vector2d &pt,
+                               Eigen::Vector2i &idx) const {
+  idx = ((pt - center_) * inv_step_size_ + Eigen::Vector2d(0.5, 0.5))
             .cast<int>() +
         CENTER_IDX_;
 
   if (idx(0) < 0 || idx(0) >= POOL_SIZE_(0) || idx(1) < 0 ||
-      idx(1) >= POOL_SIZE_(1) || idx(2) < 0 || idx(2) >= POOL_SIZE_(2)) {
-    ROS_ERROR("Ran out of pool, index=%d %d %d", idx(0), idx(1), idx(2));
+      idx(1) >= POOL_SIZE_(1)) {
+    ROS_ERROR("Ran out of pool, index=%d %d", idx(0), idx(1));
     return false;
   }
 

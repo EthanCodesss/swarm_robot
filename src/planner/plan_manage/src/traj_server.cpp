@@ -31,8 +31,8 @@ int traj_id_;
 double last_yaw_, last_yaw_dot_;
 double time_forward_;
 
-Eigen::Vector3d last_vel(Eigen::Vector3d::Zero()),
-    last_acc(Eigen::Vector3d::Zero()), last_jerk(Eigen::Vector3d::Zero());
+Eigen::Vector2d last_vel(Eigen::Vector2d::Zero()),
+    last_acc(Eigen::Vector2d::Zero()), last_jerk(Eigen::Vector2d::Zero());
 bool flag = false;
 double jerk2_inter = 0, acc2_inter = 0;
 int cnt = 0;
@@ -40,7 +40,7 @@ ros::Time global_start_time;
 int drone_id_;
 std::string result_dir = "/home/zuzu/Documents/report/";
 std::fstream result_file;
-std::vector<Eigen::Vector3d> pos_vec_, vel_vec_, acc_vec_, jerk_vec_;
+std::vector<Eigen::Vector2d> pos_vec_, vel_vec_, acc_vec_, jerk_vec_;
 std::vector<double> time_vec_;
 
 const std::vector<std::string> explode(const std::string &s, const char &c) {
@@ -82,9 +82,6 @@ void polyTrajCallback(traj_utils::PolyTrajPtr msg) {
     cMats[i].row(1) << msg->coef_y[i6 + 0], msg->coef_y[i6 + 1],
         msg->coef_y[i6 + 2], msg->coef_y[i6 + 3], msg->coef_y[i6 + 4],
         msg->coef_y[i6 + 5];
-    cMats[i].row(2) << msg->coef_z[i6 + 0], msg->coef_z[i6 + 1],
-        msg->coef_z[i6 + 2], msg->coef_z[i6 + 3], msg->coef_z[i6 + 4],
-        msg->coef_z[i6 + 5];
 
     dura[i] = msg->duration[i];
   }
@@ -116,8 +113,7 @@ void finishCallback(const std_msgs::Bool::ConstPtr &msg) {
     double max_vel2 = 0;
     for (int i = 0; i < time_vec_.size(); i++) {
       double tmp_vel2 = (vel_vec_[i](0)) * (vel_vec_[i](0)) +
-                        (vel_vec_[i](1)) * (vel_vec_[i](1)) +
-                        (vel_vec_[i](2)) * (vel_vec_[i](2));
+                        (vel_vec_[i](1)) * (vel_vec_[i](1));
       max_vel2 = (tmp_vel2 > max_vel2) ? tmp_vel2 : max_vel2;
     }
     result_file << "max_vel = " << sqrt(max_vel2) << "\n";
@@ -132,7 +128,7 @@ void startCallback(const std_msgs::Bool::ConstPtr &msg) {
   }
 }
 
-std::pair<double, double> calculate_yaw(double t_cur, Eigen::Vector3d &pos,
+std::pair<double, double> calculate_yaw(double t_cur, Eigen::Vector2d &pos,
                                         ros::Time &time_now,
                                         ros::Time &time_last) {
   constexpr double PI = 3.1415926;
@@ -142,7 +138,7 @@ std::pair<double, double> calculate_yaw(double t_cur, Eigen::Vector3d &pos,
   double yaw = 0;
   double yawdot = 0;
 
-  Eigen::Vector3d dir = t_cur + time_forward_ <= traj_duration_
+  Eigen::Vector2d dir = t_cur + time_forward_ <= traj_duration_
                             ? traj_->getPos(t_cur + time_forward_) - pos
                             : traj_->getPos(traj_duration_) - pos;
   double yaw_temp = dir.norm() > 0.1 ? atan2(dir(1), dir(0)) : last_yaw_;
@@ -219,8 +215,8 @@ void cmdCallback(const ros::TimerEvent &e) {
   ros::Time time_now = ros::Time::now();
   double t_cur = (time_now - start_time_).toSec();
 
-  Eigen::Vector3d pos(Eigen::Vector3d::Zero()), vel(Eigen::Vector3d::Zero()),
-      acc(Eigen::Vector3d::Zero()), jerk(Eigen::Vector3d::Zero()), pos_f;
+  Eigen::Vector2d pos(Eigen::Vector2d::Zero()), vel(Eigen::Vector2d::Zero()),
+      acc(Eigen::Vector2d::Zero()), jerk(Eigen::Vector2d::Zero()), pos_f;
   std::pair<double, double> yaw_yawdot(0, 0);
 
   static ros::Time time_last = ros::Time::now();
@@ -276,15 +272,15 @@ void cmdCallback(const ros::TimerEvent &e) {
 
   cmd.position.x = pos(0);
   cmd.position.y = pos(1);
-  cmd.position.z = pos(2);
+  cmd.position.z = 1;
 
   cmd.velocity.x = vel(0);
   cmd.velocity.y = vel(1);
-  cmd.velocity.z = vel(2);
+  cmd.velocity.z = 0;
 
   cmd.acceleration.x = acc(0);
   cmd.acceleration.y = acc(1);
-  cmd.acceleration.z = acc(2);
+  cmd.acceleration.z = 0;
 
   cmd.yaw = yaw_yawdot.first;
   cmd.yaw_dot = yaw_yawdot.second;
