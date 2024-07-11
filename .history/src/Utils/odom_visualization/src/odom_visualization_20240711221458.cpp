@@ -358,8 +358,7 @@ void odom_callback(const nav_msgs::Odometry::ConstPtr &msg) {
   meshROS.scale.z = scale;
 
   const Color &color = predefinedColors[_drone_id];
-  // std::cout << _drone_id << endl;
-  meshROS.color.a = 0.7;
+  meshROS.color.a = 1;
   meshROS.color.r = color.r;
   meshROS.color.g = color.g;
   meshROS.color.b = color.b;

@@ -135,10 +135,10 @@ void RandomMapGenerateWarehouse() {
   double numel_e = 0.00001;
   pcl::PointXYZ pt_random;
 
-  rand_x = uniform_real_distribution<double>(_x_l, _x_h);
-  rand_y = uniform_real_distribution<double>(_y_l, _y_h);
-  rand_w = uniform_real_distribution<double>(_w_l, _w_h);
-  rand_h = uniform_real_distribution<double>(_h_l, _h_h);
+  rand_x = uniform_real_distribution<double>(x_min, x_max);
+  rand_y = uniform_real_distribution<double>(y_min, y_max);
+  rand_w = uniform_real_distribution<double>(r_min, r_max);
+  rand_h = uniform_real_distribution<double>(h_min, h_max);
 
   int obs_iter = 0;
   while (obs_iter < 6) {
@@ -154,20 +154,20 @@ void RandomMapGenerateWarehouse() {
     else
       y = -2;
 
-    x = floor(x / _resolution) * _resolution + _resolution / 2.0;
-    y = floor(y / _resolution) * _resolution + _resolution / 2.0;
+    x = floor(x / resolution) * resolution + resolution / 2.0;
+    y = floor(y / resolution) * resolution + resolution / 2.0;
 
-    int widNum = ceil(0.6 / _resolution);
-    int longNum = ceil(3.0 / _resolution);
+    int widNum = ceil(0.6 / resolution);
+    int longNum = ceil(3.0 / resolution);
 
     for (int r = -longNum / 2.0; r < longNum / 2.0; r++) {
       for (int s = -widNum / 2.0; s < widNum / 2.0; s++) {
         h = rand_h(eng);
-        int heiNum = ceil(h / _resolution);
+        int heiNum = ceil(h / resolution);
         for (int t = 0; t < heiNum; t++) {
-          pt_random.x = x + (r + 0.5) * _resolution + numel_e;
-          pt_random.y = y + (s + 0.5) * _resolution + numel_e;
-          pt_random.z = (t + 0.5) * _resolution + numel_e;
+          pt_random.x = x + (r + 0.5) * resolution + numel_e;
+          pt_random.y = y + (s + 0.5) * resolution + numel_e;
+          pt_random.z = (t + 0.5) * resolution + numel_e;
           cloudMap.points.push_back(pt_random);
         }
       }
@@ -211,20 +211,20 @@ void RandomMapGenerateWarehouse() {
       hh = 5;
     }
 
-    x = floor(x / _resolution) * _resolution + _resolution / 2.0;
-    y = floor(y / _resolution) * _resolution + _resolution / 2.0;
+    x = floor(x / resolution) * resolution + resolution / 2.0;
+    y = floor(y / resolution) * resolution + resolution / 2.0;
 
-    int widNum = ceil(w / _resolution);
-    int longNum = ceil(hh / _resolution);
+    int widNum = ceil(w / resolution);
+    int longNum = ceil(hh / resolution);
 
     for (int r = -longNum / 2.0; r < longNum / 2.0; r++) {
       for (int s = -widNum / 2.0; s < widNum / 2.0; s++) {
         h = rand_h(eng);
-        int heiNum = ceil(0.2 / _resolution);
+        int heiNum = ceil(0.2 / resolution);
         for (int t = 0; t < heiNum; t++) {
-          pt_random.x = x + (r + 0.5) * _resolution + numel_e;
-          pt_random.y = y + (s + 0.5) * _resolution + numel_e;
-          pt_random.z = (t + 0.5) * _resolution + numel_e;
+          pt_random.x = x + (r + 0.5) * resolution + numel_e;
+          pt_random.y = y + (s + 0.5) * resolution + numel_e;
+          pt_random.z = (t + 0.5) * resolution + numel_e;
           cloudMap.points.push_back(pt_random);
         }
       }

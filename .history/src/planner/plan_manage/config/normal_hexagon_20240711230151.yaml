@@ -24,7 +24,7 @@ optimization:
   weight_time         : 80.0
   weight_formation    : 15000.0
   obstacle_clearance  : 0.5
-  swarm_clearance     : 0.2
+  swarm_clearance     : 0.5
 
 fsm:
   replan_trajectory_time : 0.1    # s, the max time of replanning trajectory

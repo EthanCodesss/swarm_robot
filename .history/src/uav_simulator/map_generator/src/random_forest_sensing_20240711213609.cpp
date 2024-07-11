@@ -585,7 +585,7 @@ int main(int argc, char **argv) {
   eng.seed(seed);
 
   // RandomMapGenerate();  wait to debug
-  RandomMapGenerate2d();
+  RandomMapGenerate();
   // FixMapGenerate();
 
   ros::Rate loop_rate(_pub_rate);

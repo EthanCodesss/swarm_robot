@@ -111,6 +111,10 @@
       "matrixd": "cpp",
       "matrixf": "cpp",
       "mixinvector": "cpp",
-      "fast_back_stack": "cpp"
+      "fast_back_stack": "cpp",
+      "bufferobject": "cpp",
+      "vertexarraystate": "cpp",
+      "buffered_value": "cpp",
+      "math": "cpp"
     }
 }

@@ -584,11 +584,12 @@ int main(int argc, char **argv) {
        << endl;
   eng.seed(seed);
 
-  // RandomMapGenerate();  wait to debug
-  RandomMapGenerate2d();
-  // FixMapGenerate();
+  RandomMapGenerate();
+  wait to debug
+      // RandomMapGenerate2d();
+      // FixMapGenerate();
 
-  ros::Rate loop_rate(_pub_rate);
+      ros::Rate loop_rate(_pub_rate);
 
   // real map
   while (ros::ok()) {

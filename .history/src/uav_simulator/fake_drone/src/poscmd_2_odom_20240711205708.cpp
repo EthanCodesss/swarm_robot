@@ -29,10 +29,10 @@ void pubOdom() {
     odom.pose.pose.position.y = _cmd.position.y;
     odom.pose.pose.position.z = _cmd.position.z;
 
-    odom.pose.pose.orientation.w = cos(_cmd.yaw / 2);
+    odom.pose.pose.orientation.w = cos(cmd.yaw / 2);
     odom.pose.pose.orientation.x = 0;
     odom.pose.pose.orientation.y = 0;
-    odom.pose.pose.orientation.z = sin(_cmd.yaw / 2.0);
+    odom.pose.pose.orientation.z = sin(yaw / 2.0);
 
     odom.twist.twist.linear.x = _cmd.velocity.x;
     odom.twist.twist.linear.y = _cmd.velocity.y;

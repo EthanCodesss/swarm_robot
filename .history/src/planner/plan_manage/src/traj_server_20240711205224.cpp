@@ -142,7 +142,7 @@ std::pair<double, double> calculate_yaw(double t_cur, Eigen::Vector2d &vel,
   B_h << 0, -1, 1, 0;
   Eigen::Vector2d dir = vel;
   yaw = atan2(dir(1), dir(0));
-  yawdot = (acc.transpose() * B_h * vel)(0, 0) / vel.squaredNorm();
+  yaw_dot = (acc.transpose() * B_h * vel)(0, 0) / vel.squaredNorm();
   // double max_yaw_change = YAW_DOT_MAX_PER_SEC * (time_now -
   // time_last).toSec(); if (yaw_temp - last_yaw_ > PI) {
   //   if (yaw_temp - last_yaw_ - 2 * PI < -max_yaw_change) {

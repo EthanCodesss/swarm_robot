@@ -54,14 +54,14 @@ struct Color {
 
 // 假设我们有5种预定义的颜色
 const Color predefinedColors[] = {
-    {255, 0, 0, 1},   // 鲜艳的红色
-    {0, 255, 0, 1},   // 鲜亮的绿色
-    {0, 0, 255, 1},   // 鲜艳的蓝色
-    {255, 255, 0, 1}, // 鲜艳的黄色
-    {255, 0, 255, 1}, // 鲜艳的紫色
-    {0, 255, 255, 1}, // 鲜艳的青色
-    {255, 128, 0, 1}, // 橙色
-    {128, 0, 128, 1}  // 深紫色
+    {1.0f, 0.0f, 0.0f, 1.0f}, // 鲜艳的红色
+    {0.0f, 1.0f, 0.0f, 1.0f}, // 鲜亮的绿色
+    {0.0f, 0.0f, 1.0f, 1.0f}, // 鲜艳的蓝色
+    {1.0f, 1.0f, 0.0f, 1.0f}, // 鲜艳的黄色
+    {1.0f, 0.0f, 1.0f, 1.0f}, // 鲜艳的紫色
+    {0.0f, 1.0f, 1.0f, 1.0f}, // 鲜艳的青色
+    {1.0f, 0.5f, 0.0f, 1.0f}, // 橙色
+    {0.5f, 0.0f, 0.5f, 1.0f}  // 紫色
 };
 void odom_callback(const nav_msgs::Odometry::ConstPtr &msg) {
   if (msg->header.frame_id == string("null"))
@@ -357,9 +357,8 @@ void odom_callback(const nav_msgs::Odometry::ConstPtr &msg) {
   meshROS.scale.y = scale;
   meshROS.scale.z = scale;
 
-  const Color &color = predefinedColors[_drone_id];
-  // std::cout << _drone_id << endl;
-  meshROS.color.a = 0.7;
+  const Color &color = colorMap[_drone_id];
+  meshROS.color.a = color.a;
   meshROS.color.r = color.r;
   meshROS.color.g = color.g;
   meshROS.color.b = color.b;
@@ -448,11 +447,10 @@ void cmd_callback(const quadrotor_msgs::PositionCommand cmd) {
   meshROS.scale.x = 2.0;
   meshROS.scale.y = 2.0;
   meshROS.scale.z = 2.0;
-  const Color &color = predefinedColors[_drone_id];
-  meshROS.color.a = 1;
-  meshROS.color.r = color.r;
-  meshROS.color.g = color.a;
-  meshROS.color.b = color.b;
+  meshROS.color.a = color_a;
+  meshROS.color.r = color_r;
+  meshROS.color.g = color_g;
+  meshROS.color.b = color_b;
   meshROS.mesh_resource = mesh_resource;
   meshPub.publish(meshROS);
 }
