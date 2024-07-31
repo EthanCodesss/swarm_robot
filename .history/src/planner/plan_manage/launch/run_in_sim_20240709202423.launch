@@ -43,6 +43,15 @@
         <arg name="map_size_x_"             value="$(arg map_size_x)"/>
         <arg name="map_size_y_"             value="$(arg map_size_y)"/>
         <arg name="map_size_z_"             value="$(arg map_size_z)"/>
+        <!-- <arg name="weight_obstacle"         value="$(arg weight_obstacle)"/>
+        <arg name="weight_swarm"            value="$(arg weight_swarm)"/>
+        <arg name="weight_feasibility"      value="$(arg weight_feasibility)"/>
+        <arg name="weight_sqrvariance"      value="$(arg weight_sqrvariance)"/>
+        <arg name="weight_time"             value="$(arg weight_time)"/>
+        <arg name="weight_formation"        value="$(arg weight_formation)"/> -->
+        <!-- <arg name="obstacle_clearance"      value="$(arg obstacle_clearance)"/> -->
+        <!-- <arg name="swarm_clearance"         value="$(arg swarm_clearance)"/> -->
+        <!-- <arg name="replan_trajectory_time"  value="$(arg replan_trajectory_time)"/> -->
 
         <!-- camera pose: transform of camera frame in the world frame -->
         <!-- depth topic: depth image, 640x480 by default -->
