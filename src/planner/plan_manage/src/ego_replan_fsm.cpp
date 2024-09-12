@@ -219,10 +219,6 @@ void EGOReplanFSM::execFSMCallback(const ros::TimerEvent &e) {
         std_msgs::Bool msg;
         msg.data = true;
         reached_pub_.publish(msg);
-
-
-
-
         goto force_return;
       } else if ((end_pt_ - pos).norm() > no_replan_thresh_ &&
                  t_cur > replan_thresh_) {
@@ -758,63 +754,6 @@ bool EGOReplanFSM::callReboundReplan(bool flag_use_poly_init,
     poly_traj_pub_.publish(msg);
     broadcast_ploytraj_pub_.publish(msg);
     have_local_traj_ = true;
-
-    // 在这里添加step, save computation time each time, robot cost value,  robot constraint value, robot inter-distance
-    // formation metrics， robot obstacle distance
-    double smooth_cost = planner_manager_->ploy_traj_opt_->getMinJerkOptPtr()->getTrajJerkCost();
-    cost_iter_.push_back(smooth_cost);
-    LocalTrajData *info = &planner_manager_->traj_.local_traj;
-
-    // 首先设置filename， 然后提取每一部分
-    constexpr double time_step = 0.01;
-    double t_cur = ros::Time::now().toSec() - info->start_time;
-    Eigen::Vector2d p_cur = info->traj.getPos(t_cur);
-    Eigen::Vector2d vel_cur = info->traj.getVel(t_cur);
-    Eigen::Vector2d acc_cur = info->traj.getAcc(t_cur);
-
-
-    velocity_.push_back(vel_cur);
-    accelaration_.push_back(acc_cur);
-
-    computation_time_iter_.push_back(planner_manager_->ploy_traj_opt_->time_each_);
-
-
-    const double CLEARANCE = 0.8 * planner_manager_->getSwarmClearance();
-    double t_cur_global = ros::Time::now().toSec();
-    double t_2_3 = planner_manager_->ploy_traj_opt_->getCollisionCheckTimeEnd();
-    double t_temp;
-    bool occ = false;
-    double dist;
-    planner_manager_->grid_map_->evaluateEDT2d(p_cur, dist);
-
-    min_dis_obstacle_.push_back(dist);
-    for (size_t id = 0; id < planner_manager_->traj_.swarm_traj.size(); id++) {
-      if ((planner_manager_->traj_.swarm_traj.at(id).drone_id != (int)id) ||
-          (planner_manager_->traj_.swarm_traj.at(id).drone_id ==
-           planner_manager_->pp_.drone_id)) {
-        continue;
-      }
-
-      double t_X =
-          t_cur_global - planner_manager_->traj_.swarm_traj.at(id).start_time;
-
-      if (t_X > planner_manager_->traj_.swarm_traj.at(id).duration)
-        continue;
-
-      Eigen::Vector2d swarm_pridicted =
-          planner_manager_->traj_.swarm_traj.at(id).traj.getPos(t_X);
-      double dist = (p_cur - swarm_pridicted).norm();
-      dis_robot_[id] = dist;
-    }
-
-    // 然后添加地图， 最后添加脚本进行随机测试，成功率等， 然后提取每一部分的数据，还可以求平均
-
-
-
-
-
-
-
   }
 
   return plan_success;

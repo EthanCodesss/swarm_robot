@@ -113,7 +113,7 @@ public:
                         std::vector<Eigen::Vector2d> &simple_path,
                         Eigen::MatrixXd &ctl_points,
                         poly_traj::MinJerkOpt &frontendMJ);
-  double time_each_;
+
 private:
   /* callbacks by the L-BFGS optimizer */
   static double costFunctionCallback(void *func_data, const double *x,

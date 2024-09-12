@@ -57,8 +57,6 @@ namespace ego_planner
 
     bool checkCollision(int drone_id);
 
-    double getCost();
-
     void fakeSwarmTrajs(void);
 
     PlanParameters pp_;
