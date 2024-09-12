@@ -61,6 +61,13 @@ bool PolyTrajOptimizer::OptimizeTrajectory_lbfgs(
       variable_num_, q, &final_cost, PolyTrajOptimizer::costFunctionCallback,
       NULL, PolyTrajOptimizer::earlyExitCallback, this, &lbfgs_params);
 
+  // 可以在这里添加evualte cost 
+  const double smooth_cost = jerkOpt_.getTrajJerkCost();
+
+
+  // 这里也可以添加获取optimization time的代码
+
+
   // test collision
   bool occ = false;
   occ = checkCollision();
@@ -70,6 +77,8 @@ bool PolyTrajOptimizer::OptimizeTrajectory_lbfgs(
   t2 = ros::Time::now();
   double time_ms = (t2 - t1).toSec() * 1000;
   double total_time_ms = (t2 - t0).toSec() * 1000;
+
+  time_each_ = time_ms;
 
   printf("\033[32miter=%d, use_formation=%d, time(ms)=%5.3f, \n\033[0m",
          iter_num_, use_formation, time_ms);
