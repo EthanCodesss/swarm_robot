@@ -714,7 +714,6 @@ public:
   ~MinJerkOpt() { A.destroy(); }
 
 private:
-  // N为轨迹段数
   int N;
   Eigen::Matrix<double, 2, 3> headPVA;
   Eigen::Matrix<double, 2, 3> tailPVA;

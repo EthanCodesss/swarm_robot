@@ -108,7 +108,7 @@ void PlanningVisualization::swarmGraphVisulCallback(const ros::TimerEvent &e) {
     // line_strip.color.b = 0.5;
     // line_strip.color.a = 0.7;
 
-    line_strip.scale.x = 0.1;
+    line_strip.scale.x = 0.2;
     line_strip.color.r = 0.9;
     line_strip.color.g = 0.3;
     line_strip.color.b = 0.3;
