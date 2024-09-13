@@ -103,7 +103,7 @@ Visualization Manager:
       Reference Frame: <Fixed Frame>
       Value: false
     - Alpha: 0.5
-      Cell Size: 1
+      Cell Size: 2
       Class: rviz/Grid
       Color: 160; 160; 164
       Enabled: true
@@ -129,8 +129,8 @@ Visualization Manager:
       Axis: Z
       Channel Name: intensity
       Class: rviz/PointCloud2
-      Color: 198; 198; 198
-      Color Transformer: FlatColor
+      Color: 0; 0; 0
+      Color Transformer: AxisColor
       Decay Time: 0
       Enabled: true
       Invert Rainbow: false
