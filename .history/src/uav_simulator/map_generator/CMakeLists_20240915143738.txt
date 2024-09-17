@@ -32,7 +32,7 @@ target_link_libraries(random_forest
   ${PCL_LIBRARIES})
 
 
-add_executable (dynamic_random_forest src/dynamic_forest_seq_sensing.cpp )
-target_link_libraries(dynamic_random_forest
+add_executable (random_forest src/random_forest_sensing.cpp )
+target_link_libraries(random_forest
   ${catkin_LIBRARIES}
   ${PCL_LIBRARIES})

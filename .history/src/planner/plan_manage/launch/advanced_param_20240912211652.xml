@@ -59,8 +59,8 @@
     <remap from="~planning/broadcast_traj_recv" to = "/broadcast_traj_to_planner"/>
 
     <remap from="~grid_map/odom" to="/drone_$(arg drone_id)_$(arg odometry_topic)"/>
-    <!-- <remap from="~grid_map/cloud" to="/drone_$(arg drone_id)_$(arg cloud_topic)"/> -->
-    <remap from="~grid_map/cloud" to="/map_generator/global_cloud"/>
+    <remap from="~grid_map/cloud" to="/drone_$(arg drone_id)_$(arg cloud_topic)"/>
+    <!-- <remap from="~grid_map/cloud" to="/map_generator/global_cloud"/> -->
     <remap from="~grid_map/pose"   to = "/drone_$(arg drone_id)_$(arg camera_pose_topic)"/> 
     <remap from="~grid_map/depth" to = "/drone_$(arg drone_id)_$(arg depth_topic)"/>
     

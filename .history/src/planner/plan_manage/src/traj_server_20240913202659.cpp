@@ -145,7 +145,7 @@ std::pair<double, double> calculate_yaw(double t_cur,Eigen::Vector2d &pos, Eigen
   // yawdot = (acc.transpose() * B_h * vel)(0, 0) / vel.squaredNorm();
 
 
-  Eigen::Vector2d dir = t_cur + time_forward_ <= traj_duration_
+  Eigen::Vector3d dir = t_cur + time_forward_ <= traj_duration_
                             ? traj_->getPos(t_cur + time_forward_) - pos
                             : traj_->getPos(traj_duration_) - pos;
   double yaw_temp = dir.norm() > 0.1
@@ -263,7 +263,7 @@ void cmdCallback(const ros::TimerEvent &e) {
     jerk = traj_->getJer(t_cur);
 
     /*** calculate yaw ***/
-    yaw_yawdot = calculate_yaw(t_cur, pos, vel, acc, time_now, time_last);
+    yaw_yawdot = calculate_yaw(t_cur, vel, acc, time_now, time_last);
     /*** calculate yaw ***/
 
     double tf = std::min(traj_duration_, t_cur + 2.0);

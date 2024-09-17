@@ -119,6 +119,9 @@
       "specialfunctions": "cpp",
       "bufferobject": "cpp",
       "vertexarraystate": "cpp",
-      "buffered_value": "cpp"
+      "buffered_value": "cpp",
+      "*.ipp": "cpp",
+      "polytope": "cpp",
+      "primitiveset": "cpp"
     }
 }

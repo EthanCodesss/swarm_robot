@@ -14,7 +14,7 @@
     </include>
 
     <!-- map -->
-    <node pkg ="map_generator" name ="dynamic_random_forest" type ="dynamic_random_forest" output = "screen">    
+    <node pkg ="map_generator" name ="random_forest" type ="random_forest" output = "screen">    
         <param name="map/x_size"     value="15" />
         <param name="map/y_size"     value="8" />
         <param name="map/z_size"     value="3.0" />
